@@ -1,0 +1,36 @@
+{% extends 'globals/index.html' %}
+
+{% block title %}Atualizar Orçamento{% endblock %}
+
+{% block content %}
+    <div class="container justify-content-center mt-04">
+        <div class="card my_class" style='max-width: 500px; margin: auto;'>
+            <div class="card-header text-center">
+                <h1>Atualizar Orçamento</h1>
+            </div>
+            
+            <div class="card-body">
+                <form action="/atualizar_orcamento/{{ orcamento.id }}/" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="data_entrega">Data de Entrega</label>
+                        <input class="form-control mb-2" type="date" name="data_entrega" id="data_entrega" value="{{ orcamento.data_entrega|date:'Y-m-d' }}">
+                        
+                        <label for="valor">Valor</label>
+                        <input class="form-control mb-2" type="number" name="valor" id="valor" value="{{ orcamento.valor }}" step="0.01">
+
+                        <label for="orcamento">Orçamento</label>
+                        <input class="form-control mb-2" type="text" name="orcamento" id="orcamento" value="{{ orcamento.orcamento }}">
+
+                        <label for="status">Status</label>
+                        <select class="form-control mb-2" name="status" id="status">
+                            <option value="Em andamento" {% if orcamento.status == 'Em andamento' %}selected{% endif %}>Em andamento</option>
+                            <option value="Finalizado" {% if orcamento.status == 'Finalizado' %}selected{% endif %}>Finalizado</option>
+                        </select>
+                    </div>
+                    <input class="btn btn-outline-success mt-1" type="submit" value="Atualizar">
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
