@@ -15,28 +15,28 @@
                     <!-- Campo do Cliente -->
                     <div class="form-group mb-3">
                         <label class="form-label" for="cliente">Cliente:</label>
-                        <input list="clientes" class="form-control mb-2" name="cliente" id="cliente" placeholder="Selecione um cliente">
-                        <datalist id="clientes">
+                        <select class="form-control mb-2" name="cliente" id="cliente" required>
+                            <option value="" disabled selected>Selecione um cliente</option>
                             {% for cliente in clientes %}
-                                <option value="{{ cliente.nome }}">{{ cliente.nome }}</option>
+                                <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
                             {% endfor %}
-                        </datalist>
-                    </div>
+                        </select>
+                    </div>                    
 
                     <!-- Campo de Seleção de Balanças -->
                     <div class="form-group mb-3">
                         <label for="balancas_select">Selecione as Balanças:</label>
-                        <input list="balancas" id="balancas_select" class="form-control mb-2" placeholder="Digite ou selecione as balanças">
-                        <datalist id="balancas">
+                        <select id="balancas_select" class="form-control mb-2" name="balancas" multiple>
                             {% for balanca in balancas %}
-                                <option value="{{ balanca.marca }}">{{ balanca.marca }}</option>
+                                <option value="{{ balanca.id }}">{{ balanca.marca }}</option>
                             {% endfor %}
-                        </datalist>
+                        </select>
                         <button type="button" class="btn btn-secondary mt-2" id="add_balanca">Adicionar Balança</button>
                     </div>
-
+                    
                     <!-- Container dos Números de Série -->
                     <div id="numeros_serie_container" class="form-group mb-3"></div>
+                    
 
                     <!-- Outros Campos -->
                     <div class="form-group mb-3">
@@ -58,19 +58,26 @@
     </div>
 
     <script>
-        // Adiciona balanças selecionadas ao container com um campo de número de série e botão de remoção
-        document.getElementById('add_balanca').addEventListener('click', function() {
+        document.getElementById('add_balanca').addEventListener('click', function () {
             const balancaSelect = document.getElementById('balancas_select');
             const container = document.getElementById('numeros_serie_container');
-            
-            // Valor selecionado no input de balança
-            const balancaMarca = balancaSelect.value.trim();
 
-            if (balancaMarca) {
+            // Obter todas as opções selecionadas no <select>
+            const selectedOptions = Array.from(balancaSelect.selectedOptions);
+
+            selectedOptions.forEach(option => {
+                const balancaId = option.value;
+                const balancaMarca = option.text;
+
+                // Verificar se o campo para essa balança já existe
+                if (container.querySelector(`[data-balanca="${balancaId}"]`)) {
+                    return; // Pular se já foi adicionado
+                }
+
                 // Cria um div para o campo de número de série e o nome da balança
                 const balancaGroup = document.createElement('div');
                 balancaGroup.className = 'form-group mb-3 d-flex align-items-center';
-                balancaGroup.dataset.balanca = balancaMarca; // Marca o elemento para remoção
+                balancaGroup.dataset.balanca = balancaId; // Marca o elemento para remoção
 
                 const label = document.createElement('label');
                 label.className = 'me-2';
@@ -79,15 +86,15 @@
                 const input = document.createElement('input');
                 input.className = 'form-control mb-2 me-2';
                 input.type = 'text';
-                input.name = `numero_serie_${balancaMarca.replace(/\s+/g, '_')}`; // Nome único
+                input.name = `numero_serie_${balancaId}`; // Nome único
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'btn btn-danger btn-sm';
                 removeBtn.innerText = 'Remover';
-                
+
                 // Função para remover o campo atual
-                removeBtn.addEventListener('click', function() {
+                removeBtn.addEventListener('click', function () {
                     balancaGroup.remove();
                 });
 
@@ -96,10 +103,11 @@
                 balancaGroup.appendChild(input);
                 balancaGroup.appendChild(removeBtn);
                 container.appendChild(balancaGroup);
+            });
 
-                // Limpa o campo de seleção
-                balancaSelect.value = '';
-            }
-        });
+            // Limpa as seleções no <select>
+            balancaSelect.selectedIndex = -1;
+    }   );
+
     </script>
 {% endblock %}

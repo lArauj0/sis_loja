@@ -115,11 +115,6 @@ def criar_orcamento(request):
             })
 
 
-
-
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.dateparse import parse_date
-
 def atualizar_orcamento(request, id):
     orcamento = get_object_or_404(Orcamentos, id=id)
 
