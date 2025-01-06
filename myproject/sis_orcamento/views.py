@@ -85,8 +85,14 @@ def criar_orcamento(request):
 
     elif request.method == 'POST':
         cliente_id = request.POST.get('cliente')
-        balanca_ids = request.POST.getlist('balancas')  # Pega todas as balanças selecionadas
+        balanca_ids = request.POST.get('balance_id')  # Pega todas as balanças selecionadas
         data_chegada = request.POST.get('data_chegada')
+        problema_pelo_cliente = request.POST.get('problema_pelo_cliente')
+        print("print pre if interno")
+        print(problema_pelo_cliente)
+        for i in request.POST.keys():
+            if "numero_serie_"  in i:
+                balanca_ids = i[13:]
 
         if cliente_id and balanca_ids and data_chegada:
             cliente = get_object_or_404(Clientes, id=cliente_id)
@@ -94,20 +100,22 @@ def criar_orcamento(request):
 
             for balanca_id in balanca_ids:
                 balanca = get_object_or_404(Balancas, id=balanca_id)
-                num_serie_balanca = request.POST.get(f'numero_serie_{balanca_id}')  # Pega o número de série da balança
+                num_serie_balanca = request.POST.get(f'numero_serie_{balanca_id}') # Pega o número de série da balança
 
                 # Cria um orçamento para cada balança com o número de série correspondente
                 Orcamentos.objects.create(
                     cliente=cliente,
                     balanca=balanca,
                     num_serie_balanca=num_serie_balanca,
+                    problema_pelo_cliente=problema_pelo_cliente,
                     data_chegada=data_chegada,
                     status=status
                 )
-
+            print("print pós if interno")
             return redirect(listas_gerais)
 
         else:
+            print("print else interno")
             return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
                 'error': 'Por favor, preencha todos os campos.',
                 'clientes': Clientes.objects.all(),
@@ -197,6 +205,7 @@ def listas_gerais(request):
         'data_entrega': value.data_entrega,
         'valor': value.valor,
         'num_serie_balanca': value.num_serie_balanca,
+        'problema_pelo_cliente': value.problema_pelo_cliente,
         'orcamento': value.orcamento,
         'status': value.status
     } for value in values_orcamento]
