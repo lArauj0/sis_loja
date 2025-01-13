@@ -85,18 +85,19 @@ def criar_orcamento(request):
 
     elif request.method == 'POST':
         cliente_id = request.POST.get('cliente')
-        balanca_ids = request.POST.get('balance_id')  # Pega todas as balanças selecionadas
+        balanca_ids = []  # Pega todas as balanças selecionadas
         data_chegada = request.POST.get('data_chegada')
         problema_pelo_cliente = request.POST.get('problema_pelo_cliente')
-        print("print pre if interno")
-        print(problema_pelo_cliente)
+        
+
         for i in request.POST.keys():
             if "numero_serie_"  in i:
-                balanca_ids = i[13:]
+                balanca_ids.append(i[13:])
 
         if cliente_id and balanca_ids and data_chegada:
             cliente = get_object_or_404(Clientes, id=cliente_id)
             status = "Em andamento"  # Definir o status como "Em andamento" automaticamente
+
 
             for balanca_id in balanca_ids:
                 balanca = get_object_or_404(Balancas, id=balanca_id)
@@ -111,11 +112,9 @@ def criar_orcamento(request):
                     data_chegada=data_chegada,
                     status=status
                 )
-            print("print pós if interno")
             return redirect(listas_gerais)
 
         else:
-            print("print else interno")
             return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
                 'error': 'Por favor, preencha todos os campos.',
                 'clientes': Clientes.objects.all(),
