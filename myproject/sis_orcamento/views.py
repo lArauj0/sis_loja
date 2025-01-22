@@ -81,27 +81,31 @@ def criar_orcamento(request):
     if request.method == 'GET':
         clientes = Clientes.objects.all()
         balancas = Balancas.objects.all()
-        return render(request, 'sis_orcamento/pages/criar_orcamento.html', {'clientes': clientes, 'balancas': balancas})
+        marcas = balancas.values_list('marca', flat=True).distinct()  # Extrai as marcas
+        print("Marcas disponíveis:", marcas)  # Debug: Verificar as marcas no console
+        return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
+            'clientes': clientes,
+            'balancas': balancas,
+            'marcas': marcas,  # Passa as marcas para o template
+        })
 
     elif request.method == 'POST':
         cliente_id = request.POST.get('cliente')
         balanca_ids = []  # Pega todas as balanças selecionadas
         data_chegada = request.POST.get('data_chegada')
         problema_pelo_cliente = request.POST.get('problema_pelo_cliente')
-        
 
         for i in request.POST.keys():
-            if "numero_serie_"  in i:
+            if "numero_serie_" in i:
                 balanca_ids.append(i[13:])
 
         if cliente_id and balanca_ids and data_chegada:
             cliente = get_object_or_404(Clientes, id=cliente_id)
             status = "Em andamento"  # Definir o status como "Em andamento" automaticamente
 
-
             for balanca_id in balanca_ids:
                 balanca = get_object_or_404(Balancas, id=balanca_id)
-                num_serie_balanca = request.POST.get(f'numero_serie_{balanca_id}') # Pega o número de série da balança
+                num_serie_balanca = request.POST.get(f'numero_serie_{balanca_id}')  # Pega o número de série da balança
 
                 # Cria um orçamento para cada balança com o número de série correspondente
                 Orcamentos.objects.create(
@@ -120,6 +124,7 @@ def criar_orcamento(request):
                 'clientes': Clientes.objects.all(),
                 'balancas': Balancas.objects.all(),
             })
+
 
 
 def atualizar_orcamento(request, id):
@@ -187,9 +192,19 @@ def listas_gerais(request):
     nome = request.GET.get('nome', '').strip()
     
     if nome:
-        values_orcamento = Orcamentos.objects.select_related('cliente', 'balanca').filter(cliente__nome__icontains=nome)
+        values_orcamento = Orcamentos.objects.select_related('cliente', 'balanca').filter(
+            cliente__nome__icontains=nome
+        ) | Orcamentos.objects.filter(
+            num_serie_balanca__icontains=nome
+        )
         values_clientes = Clientes.objects.filter(nome__icontains=nome)
-        values_balancas = Balancas.objects.filter(marca__icontains=nome)
+        values_balancas = Balancas.objects.filter(
+            modelo__icontains=nome
+        ) | Balancas.objects.filter(
+            marca__icontains=nome
+        ) | Balancas.objects.filter(
+            id__icontains=nome  # Se o número de série for associado por ID
+        )
     else:
         values_orcamento = Orcamentos.objects.select_related('cliente', 'balanca').all()
         values_clientes = Clientes.objects.all()
@@ -198,8 +213,9 @@ def listas_gerais(request):
     # Usando list comprehensions para criar as listas
     orcamentos = [{
         'id': value.id,
-        'cliente': value.cliente.nome if value.cliente else 'N/A',  # Checando se cliente existe
-        'balanca': value.balanca.marca if value.balanca else 'N/A',  # Checando se balança existe
+        'cliente': value.cliente.nome if value.cliente else 'N/A',
+        'balanca': value.balanca.marca if value.balanca else 'N/A',
+        'modelo': value.balanca.modelo if value.balanca else 'N/A',
         'data_chegada': value.data_chegada,
         'data_entrega': value.data_entrega,
         'valor': value.valor,
@@ -227,3 +243,14 @@ def listas_gerais(request):
         'lista_balancas': balancas
     }
     return render(request, 'sis_orcamento/pages/listas.html', context)
+
+from django.http import JsonResponse
+
+def obter_modelos_por_marca(request):
+    marca = request.GET.get('marca', None)
+    if marca:
+        modelos = Balancas.objects.filter(marca=marca).values('id', 'modelo')
+        return JsonResponse(list(modelos), safe=False)
+    return JsonResponse([], safe=False)
+
+

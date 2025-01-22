@@ -4,3 +4,52 @@
     box-shadow: 10px 10px 16px 0px rgba(57,57,245,1);
 }
 
+.accordion-button::after {
+    content: '\f078'; /* Ícone de seta para baixo do Font Awesome */
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    float: right;
+    transition: transform 0.3s ease-in-out;
+}
+.accordion-button.collapsed::after {
+    transform: rotate(-180deg); /* Gira o ícone ao colapsar */
+}
+
+table.table tbody tr:hover {
+    background-color: #f8f9fa; /* Cor mais clara ao passar o mouse */
+    cursor: pointer;
+}
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2653d4;
+}
+
+.btn-danger {
+    background-color: #e74a3b;
+    border-color: #e74a3b;
+}
+.btn-danger:hover {
+    background-color: #c53030;
+    border-color: #a12828;
+}
+
+.modal-content {
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+#nome {
+    border-radius: 25px;
+    padding: 10px 20px;
+    border: 2px solid #4e73df;
+    transition: border-color 0.3s;
+}
+
+#nome:focus {
+    border-color: #2e59d9;
+    outline: none;
+}
+

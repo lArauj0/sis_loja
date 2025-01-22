@@ -25,6 +25,7 @@
                         <label for="status">Status</label>
                         <select class="form-control mb-2" name="status" id="status">
                             <option value="Em andamento" {% if orcamento.status == 'Em andamento' %}selected{% endif %}>Em andamento</option>
+                            <option value="Em débito"{% if orcamento.status == 'Em débito' %}selected{% endif %} >Em débito</option>
                             <option value="Finalizado" {% if orcamento.status == 'Finalizado' %}selected{% endif %}>Finalizado</option>
                         </select>
                     </div>
@@ -33,4 +34,14 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dataEntregaInput = document.getElementById('data_entrega');
+            if (!dataEntregaInput.value) { // Se o campo estiver vazio
+                const today = new Date();
+                const formattedDate = today.toISOString().split('T')[0]; // Formata como YYYY-MM-DD
+                dataEntregaInput.value = formattedDate;
+            }
+        });
+    </script>
 {% endblock %}
