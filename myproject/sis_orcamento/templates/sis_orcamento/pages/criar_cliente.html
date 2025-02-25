@@ -3,12 +3,19 @@
 {% block title %}Cadastro Cliente{% endblock %}
 
 {% block content %}
-    <div class="container justify-content-center mt-04">
-        <div class="card my_class" style = 'max-width: 500px; margin: auto;'>
+    <div class="container justify-content-center mt-4">
+        <div class="card my_class" style="max-width: 500px; margin: auto;">
             <div class="card-header text-center">
                 <h1>Cadastro de Cliente</h1>
             </div>
             <div class="card-body">
+                <!-- Exibir erro caso exista -->
+                {% if error %}
+                    <div class="alert alert-danger text-center">
+                        {{ error }}
+                    </div>
+                {% endif %}
+
                 <form action="/criar_cliente/" method="post">
                     {% csrf_token %}
                     <div class="form-group">

@@ -10,11 +10,17 @@ def criar_balanca(request):
         marca = request.POST.get('marca')
         modelo = request.POST.get('modelo')
         
-        if marca and modelo:
-            balanca = Balancas.objects.create(marca=marca, modelo=modelo)
+        if not marca or not modelo:
+            return render(request, 'sis_orcamento/pages/criar_balanca.html', {'error': 'Por favor, preencha todos os campos.'})
+        
+        # Verifica se já existe um modelo dessa marca
+        if Balancas.objects.filter(marca=marca, modelo=modelo).exists():
+            return render(request, 'sis_orcamento/pages/criar_balanca.html', {'error': 'Este modelo já está cadastrado para esta marca.'})
+
+        # Cria a nova balança
+        else:    
+            Balancas.objects.create(marca=marca, modelo=modelo)
             return redirect(listas_gerais)
-        else:
-            return render(request, 'criar_balanca.html', {'error': 'Por favor, preencha todos os campos.'})
 
     return render(request, 'sis_orcamento/pages/criar_balanca.html')
 
@@ -46,11 +52,17 @@ def criar_cliente(request):
         nome = request.POST.get('nome')
         contato = request.POST.get('contato')
 
-        if nome and contato:
-            cliente = Clientes.objects.create(nome=nome, contato=contato)
-            return redirect(listas_gerais)
+        if not nome or not contato:
+            return render(request, 'sis_orcamento/pages/criar_cliente.html', {'error': 'Por favor, preencha todos os campos.'})
+
+        # Verifica se já existe um cliente com esse contato
+        if Clientes.objects.filter(contato=contato).exists():
+            return render(request, 'sis_orcamento/pages/criar_cliente.html', {'error': 'Já existe um cliente com esse contato.'})
+
+        # Cria o novo cliente
         else:
-            return render(request, 'criar_cliente.html', {'error': 'Por favor, preencha todos os campos.'})
+            Clientes.objects.create(nome=nome, contato=contato)
+            return redirect(listas_gerais)
 
     return render(request, 'sis_orcamento/pages/criar_cliente.html')
 
