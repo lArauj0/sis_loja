@@ -4,17 +4,6 @@
     box-shadow: 10px 10px 16px 0px rgba(57,57,245,1);
 }
 
-.accordion-button::after {
-    content: '\f078'; /* Ícone de seta para baixo do Font Awesome */
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-    float: right;
-    transition: transform 0.3s ease-in-out;
-}
-.accordion-button.collapsed::after {
-    transform: rotate(-180deg); /* Gira o ícone ao colapsar */
-}
-
 table.table tbody tr:hover {
     background-color: #f8f9fa; /* Cor mais clara ao passar o mouse */
     cursor: pointer;
@@ -52,4 +41,5 @@ table.table tbody tr:hover {
     border-color: #2e59d9;
     outline: none;
 }
+
 

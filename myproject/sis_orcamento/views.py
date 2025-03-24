@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from . models import Balancas, Clientes, Orcamentos
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.dateparse import parse_date
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -20,7 +21,7 @@ def criar_balanca(request):
         # Cria a nova balança
         else:    
             Balancas.objects.create(marca=marca, modelo=modelo)
-            return redirect(listas_gerais)
+            return redirect(listas_balancas)
 
     return render(request, 'sis_orcamento/pages/criar_balanca.html')
 
@@ -36,7 +37,7 @@ def atualizar_balancas(request, id):
             balanca.marca = marca
             balanca.modelo = modelo
             balanca.save()
-            return redirect(listas_gerais)
+            return redirect(listas_balancas)
         else:
             return render(request, 'criar_balanca.html', {'error': 'Por favor, preencha todos os campos.'})
 
@@ -45,7 +46,7 @@ def atualizar_balancas(request, id):
 def deletar_balanca(request, id):
     balanca = Balancas.objects.get(id=id)
     balanca.delete()
-    return redirect(listas_gerais)
+    return redirect(listas_balancas)
 
 def criar_cliente(request):
     if request.method == 'POST':
@@ -62,7 +63,7 @@ def criar_cliente(request):
         # Cria o novo cliente
         else:
             Clientes.objects.create(nome=nome, contato=contato)
-            return redirect(listas_gerais)
+            return redirect(listas_clientes)
 
     return render(request, 'sis_orcamento/pages/criar_cliente.html')
 
@@ -77,7 +78,7 @@ def atualizar_clientes(request, id):
             cliente.nome = nome
             cliente.contato = contato
             cliente.save()
-            return redirect(listas_gerais)
+            return redirect(listas_clientes)
         else:
             return render(request, 'criar_cliente.html', {'error': 'Por favor, preencha todos os campos.'})
 
@@ -86,57 +87,90 @@ def atualizar_clientes(request, id):
 def deletar_clientes(request, id):
     cliente = Clientes.objects.get(id=id)
     cliente.delete()
-    return redirect(listas_gerais)
+    return redirect(listas_clientes)
 
+
+from django.contrib import messages  # Importando para utilizar o sistema de mensagens
 
 def criar_orcamento(request):
-    if request.method == 'GET':
-        clientes = Clientes.objects.all()
-        balancas = Balancas.objects.all()
-        marcas = balancas.values_list('marca', flat=True).distinct()  # Extrai as marcas
-        print("Marcas disponíveis:", marcas)  # Debug: Verificar as marcas no console
-        return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
-            'clientes': clientes,
-            'balancas': balancas,
-            'marcas': marcas,  # Passa as marcas para o template
-        })
-
-    elif request.method == 'POST':
+    if request.method == 'POST':
+        # Recuperando os dados do formulário
         cliente_id = request.POST.get('cliente')
-        balanca_ids = []  # Pega todas as balanças selecionadas
         data_chegada = request.POST.get('data_chegada')
-        problema_pelo_cliente = request.POST.get('problema_pelo_cliente')
+        balanca_ids = request.POST.getlist('balanca_id[]')
+        problemas = request.POST.getlist('problema_cliente[]')
+        numeros_serie = request.POST.getlist('numero_serie[]')
 
-        for i in request.POST.keys():
-            if "numero_serie_" in i:
-                balanca_ids.append(i[13:])
-
-        if cliente_id and balanca_ids and data_chegada:
-            cliente = get_object_or_404(Clientes, id=cliente_id)
-            status = "Em andamento"  # Definir o status como "Em andamento" automaticamente
-
-            for balanca_id in balanca_ids:
-                balanca = get_object_or_404(Balancas, id=balanca_id)
-                num_serie_balanca = request.POST.get(f'numero_serie_{balanca_id}')  # Pega o número de série da balança
-
-                # Cria um orçamento para cada balança com o número de série correspondente
-                Orcamentos.objects.create(
-                    cliente=cliente,
-                    balanca=balanca,
-                    num_serie_balanca=num_serie_balanca,
-                    problema_pelo_cliente=problema_pelo_cliente,
-                    data_chegada=data_chegada,
-                    status=status
-                )
-            return redirect(listas_gerais)
-
-        else:
+        # Validação do cliente
+        if not cliente_id:
+            messages.error(request, 'Cliente é obrigatório.')
             return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
-                'error': 'Por favor, preencha todos os campos.',
                 'clientes': Clientes.objects.all(),
                 'balancas': Balancas.objects.all(),
+                'marcas': Balancas.objects.values('marca').distinct(),
             })
 
+        try:
+            cliente = Clientes.objects.get(id=cliente_id)
+        except Clientes.DoesNotExist:
+            messages.error(request, 'Cliente não encontrado.')
+            return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
+                'clientes': Clientes.objects.all(),
+                'balancas': Balancas.objects.all(),
+                'marcas': Balancas.objects.values('marca').distinct(),
+            })
+
+        # Validação da data de chegada
+        if not data_chegada:
+            messages.error(request, 'Data de chegada é obrigatória.')
+            return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
+                'clientes': Clientes.objects.all(),
+                'balancas': Balancas.objects.all(),
+                'marcas': Balancas.objects.values('marca').distinct(),
+            })
+        
+        # Validação das balanças
+        if not balanca_ids:
+            messages.error(request, 'Pelo menos uma balança deve ser adicionada.')
+            return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
+                'clientes': Clientes.objects.all(),
+                'balancas': Balancas.objects.all(),
+                'marcas': Balancas.objects.values('marca').distinct(),
+            })
+        
+        # Processando cada balança
+        for i, balanca_id in enumerate(balanca_ids):
+            if balanca_id.strip():  # Verificando se o ID da balança não está vazio
+                try:
+                    balanca = Balancas.objects.get(id=balanca_id)
+                    
+                    # Criando o orçamento
+                    Orcamentos.objects.create(
+                        cliente=cliente,
+                        balanca=balanca,
+                        num_serie_balanca=numeros_serie[i],
+                        problema_pelo_cliente=problemas[i],
+                        data_chegada=data_chegada,
+                        status="Em andamento"
+                    )
+
+                except Balancas.DoesNotExist:
+                    continue
+
+        # Mensagem de sucesso após criar o orçamento
+        messages.success(request, 'Orçamento criado com sucesso!')
+
+        return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
+            'clientes': Clientes.objects.all(),
+            'balancas': Balancas.objects.all(),
+            'marcas': Balancas.objects.values('marca').distinct(),
+        })
+
+    return render(request, 'sis_orcamento/pages/criar_orcamento.html', {
+        'clientes': Clientes.objects.all(),
+        'balancas': Balancas.objects.all(),
+        'marcas': Balancas.objects.values('marca').distinct(),
+    })
 
 
 def atualizar_orcamento(request, id):
@@ -188,7 +222,7 @@ def atualizar_orcamento(request, id):
         orcamento.status = status
         orcamento.save()
 
-        return redirect('listas_gerais')  # Corrigido para redirecionar pela URL correta
+        return redirect('listas_orcamentos')  # Corrigido para redirecionar pela URL correta
 
     return render(request, 'sis_orcamento/pages/atualizar_orcamento.html', {'orcamento': orcamento})
 
@@ -197,10 +231,10 @@ def atualizar_orcamento(request, id):
 def deletar_orcamento(request, id):
     orcamento = get_object_or_404(Orcamentos, id=id)
     orcamento.delete()
-    return redirect(listas_gerais)
+    return redirect(listas_orcamentos)
 
 
-def listas_gerais(request):
+def listas_orcamentos(request):
     nome = request.GET.get('nome', '').strip()
     
     if nome:
@@ -256,7 +290,53 @@ def listas_gerais(request):
     }
     return render(request, 'sis_orcamento/pages/listas.html', context)
 
-from django.http import JsonResponse
+def listas_balancas(request):
+    nome = request.GET.get('nome', '').strip()
+    
+    if nome:
+        values_balancas = Balancas.objects.filter(
+            modelo__icontains=nome
+        ) | Balancas.objects.filter(
+            marca__icontains=nome
+        ) | Balancas.objects.filter(
+            id__icontains=nome  # Se o número de série for associado por ID
+        )
+    else:
+        values_balancas = Balancas.objects.all()
+
+    # Usando list comprehensions para criar as listas
+    balancas = [{
+        'id': value.id,
+        'marca': value.marca,
+        'modelo': value.modelo,
+    } for value in values_balancas]
+
+    context = {
+        'lista_balancas': balancas
+    }
+    return render(request, 'sis_orcamento/pages/listas_balancas.html', context)
+
+def listas_clientes(request):
+    nome = request.GET.get('nome', '').strip()
+    
+    if nome:
+        values_clientes = Clientes.objects.filter(
+            nome__icontains=nome
+        )
+    else:
+        values_clientes = Clientes.objects.all()
+
+    # Usando list comprehensions para criar as listas
+    clientes = [{
+        'id': value.id,
+        'nome': value.nome,
+        'contato': value.contato
+    } for value in values_clientes]
+
+    context = {
+        'lista_clientes': clientes
+    }
+    return render(request, 'sis_orcamento/pages/listas_clientes.html', context)
 
 def obter_modelos_por_marca(request):
     marca = request.GET.get('marca', None)

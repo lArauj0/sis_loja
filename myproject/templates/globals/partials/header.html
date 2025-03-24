@@ -1,16 +1,32 @@
-<nav class="navbar navbar-expand-sm bg-light justify-content-center">
+<nav class="navbar navbar-expand-sm bg-light justify-content-center mb-3">
     <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-            <a class="nav-link" href="/">Orçamentos</a>
-        </li>
         <li class="nav-item">
             <a class="nav-link" href="/criar_orcamento">Fazer Orçamento</a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="/criar_cliente">Cadastrar Cliente</a>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Listas</a>
+            <ul class="dropdown-menu">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Orçamentos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/listas_clientes">Clientes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/listas_balancas">Balanças</a>
+                </li>
+            </ul>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="/criar_balanca">Cadastrar Balanças</a>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Cadastro</a>
+            <ul class="dropdown-menu">
+                <li class="nav-item">
+                    <a class="nav-link" href="/criar_cliente">Cadastrar Cliente</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/criar_balanca">Cadastrar Balanças</a>
+                </li>
+            </ul>
         </li>
     </ul>
 </nav>

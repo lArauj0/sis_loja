@@ -3,165 +3,131 @@
 {% block title %}Orçamento{% endblock %}
 
 {% block content %}
-    <div class="container justify-content-center mt-4">
-        <div class="card my_class" style="max-width: 500px; margin: auto;">
-            <div class="card-header text-center">
-                <h1>Orçamento</h1>
-            </div>
-            <div class="card-body">
-                <form action="/criar_orcamento/" method="post">
-                    {% csrf_token %}
-                    
-                    <!-- Campo do Cliente -->
-                    <div class="form-group mb-3">
-                        <label class="form-label" for="cliente">Cliente:</label>
-                        <select class="form-control mb-2" name="cliente" id="cliente" required>
-                            <option value="" disabled selected>Selecione um cliente</option>
-                            {% for cliente in clientes %}
-                                <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Container para balanças -->
-                    <div id="balancas_container"></div>
-
-                    <button type="button" class="btn btn-primary mb-3" id="add_balanca">Adicionar Balança</button>
-
-                    <!-- Outros Campos -->
-                    <div class="form-group mb-3">
-                        <label for="data_chegada">Data de Chegada:</label>
-                        <input class="form-control" type="date" name="data_chegada" id="data_chegada" required>
-                    </div>
-
-                    <div class="text-center">
-                        <input class="btn btn-success mt-3" type="submit" value="Criar">
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="container justify-content-center mt-4">
+    {% if messages %}
+    <div class="alert alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dataInput = document.getElementById('data_chegada');
-            if (dataInput) {
-                const today = new Date();
-                const formattedDate = today.toLocaleDateString('pt-BR').split('/').reverse().join('-');
-                dataInput.value = formattedDate;
-            }
-        });
-
-        function atualizarModelos(selectMarca, selectModelo) {
-            selectMarca.addEventListener('change', function () {
-                const marcaSelecionada = this.value;
-                selectModelo.innerHTML = '<option value="" disabled selected>Selecione um modelo</option>';
-                selectModelo.disabled = true;
-
-                if (marcaSelecionada) {
-                    fetch(`/obter_modelos_por_marca/?marca=${encodeURIComponent(marcaSelecionada)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.length > 0) {
-                                selectModelo.disabled = false;
-                                data.forEach(modelo => {
-                                    const option = document.createElement('option');
-                                    option.value = modelo.id;
-                                    option.text = modelo.modelo;
-                                    selectModelo.appendChild(option);
-                                });
-                            }
-                        })
-                        .catch(error => console.error('Erro ao carregar modelos:', error));
-                }
-            });
-        }
-
-        function adicionarCamposExtras(selectModelo, container) {
-            selectModelo.addEventListener('change', function () {
-                const modeloSelecionado = selectModelo.options[selectModelo.selectedIndex].text;
-                const modeloId = selectModelo.value;
-
-                // Remove qualquer campo de número de série e problema anterior
-                container.querySelectorAll('.extras_container').forEach(e => e.remove());
-
-                if (modeloId) {
-                    // Criando div para os campos extras
-                    const div = document.createElement('div');
-                    div.className = 'extras_container';
-
-                    // Campo Número de Série
-                    const divNumeroSerie = document.createElement('div');
-                    divNumeroSerie.className = 'form-group mb-3';
-                    const labelNumeroSerie = document.createElement('label');
-                    labelNumeroSerie.textContent = `Número de Série (${modeloSelecionado}):`;
-                    const inputNumeroSerie = document.createElement('input');
-                    inputNumeroSerie.className = 'form-control';
-                    inputNumeroSerie.type = 'text';
-                    inputNumeroSerie.name = `numero_serie_${modeloId}`;
-                    inputNumeroSerie.required = true;
-                    divNumeroSerie.appendChild(labelNumeroSerie);
-                    divNumeroSerie.appendChild(inputNumeroSerie);
-
-                    // Campo Problema citado pelo Cliente
-                    const divProblema = document.createElement('div');
-                    divProblema.className = 'form-group mb-3';
-                    const labelProblema = document.createElement('label');
-                    labelProblema.textContent = 'Problema citado pelo Cliente:';
-                    const inputProblema = document.createElement('input');
-                    inputProblema.className = 'form-control';
-                    inputProblema.type = 'text';
-                    inputProblema.name = `problema_cliente_${modeloId}`;
-                    inputProblema.required = true;
-                    divProblema.appendChild(labelProblema);
-                    divProblema.appendChild(inputProblema);
-
-                    // Adicionando ao container
-                    div.appendChild(divNumeroSerie);
-                    div.appendChild(divProblema);
-                    container.appendChild(div);
-                }
-            });
-        }
-
-        document.getElementById('add_balanca').addEventListener('click', function () {
-            const balancaContainer = document.getElementById('balancas_container');
-            const novaBalanca = document.createElement('div');
-            novaBalanca.className = 'balanca_item border p-3 mb-3';
-            novaBalanca.style.borderRadius = '10px';
-
-            novaBalanca.innerHTML = `
+    {% endif %}
+    <div class="card my_class" style="max-width: 500px; margin: auto;">
+        <div class="card-header text-center">
+            <h1>Orçamento</h1>
+        </div>
+        <div class="card-body">
+            <form action="/criar_orcamento/" method="post">
+                {% csrf_token %}
+                
+                <!-- Campo do Cliente -->
                 <div class="form-group mb-3">
-                    <label>Marca da Balança:</label>
-                    <select class="form-control marca_select" required>
-                        <option value="" disabled selected>Selecione uma marca</option>
-                        {% for marca in marcas %}
-                            <option value="{{ marca }}">{{ marca }}</option>
+                    <label class="form-label" for="cliente">Cliente:</label>
+                    <select class="form-control mb-2" name="cliente" id="cliente" required>
+                        <option value="" disabled selected>Selecione um cliente</option>
+                        {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
+                <!-- Container para balanças -->
+                <div id="balancas_container"></div>
+
+                <button type="button" class="btn btn-primary mb-3" id="add_balanca">Adicionar Balança</button>
+
+                <!-- Outros Campos -->
                 <div class="form-group mb-3">
-                    <label>Modelo da Balança:</label>
-                    <select class="form-control modelo_select" disabled required>
-                        <option value="" disabled selected>Selecione um modelo</option>
-                    </select>
+                    <label for="data_chegada">Data de Chegada:</label>
+                    <input class="form-control" type="date" name="data_chegada" id="data_chegada" required>
                 </div>
 
-                <button type="button" class="btn btn-danger btn-sm remove_balanca">Remover</button>
-            `;
+                <div class="text-center">
+                    <input class="btn btn-success mt-3" type="submit" value="Criar">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-            balancaContainer.appendChild(novaBalanca);
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dataInput = document.getElementById('data_chegada');
+    if (dataInput) {
+        const today = new Date();
+        dataInput.value = today.toISOString().split('T')[0];
+    }
+});
 
-            const novaMarcaSelect = novaBalanca.querySelector('.marca_select');
-            const novoModeloSelect = novaBalanca.querySelector('.modelo_select');
+document.getElementById('add_balanca').addEventListener('click', function () {
+    const balancaContainer = document.getElementById('balancas_container');
 
-            atualizarModelos(novaMarcaSelect, novoModeloSelect);
-            adicionarCamposExtras(novoModeloSelect, novaBalanca);
+    const novaBalanca = document.createElement('div');
+    novaBalanca.className = 'balanca_item border p-3 mb-3';
+    novaBalanca.style.borderRadius = '10px';
 
-            novaBalanca.querySelector('.remove_balanca').addEventListener('click', function () {
-                novaBalanca.remove();
-            });
-        });
-    </script>
+    novaBalanca.innerHTML = `
+        <div class="form-group mb-3">
+            <label>Marca da Balança:</label>
+            <select class="form-control marca_select" required>
+                <option value="" disabled selected>Selecione uma marca</option>
+                {% for marca in marcas %}
+                    <option value="{{ marca.marca }}">{{ marca.marca }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Modelo da Balança:</label>
+            <select class="form-control modelo_select" name="balanca_id[]" required>
+                <option value="" disabled selected>Selecione um modelo</option>
+            </select>
+        </div>
+
+
+        <div class="form-group mb-3">
+            <label>Problema citado pelo Cliente:</label>
+            <input class="form-control" type="text" name="problema_cliente[]" required>
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Número de Série:</label>
+            <input class="form-control" type="text" name="numero_serie[]" required>
+        </div>
+
+        <button type="button" class="btn btn-danger btn-sm remove_balanca">Remover</button>
+    `;
+
+    balancaContainer.appendChild(novaBalanca);
+
+    const novaMarcaSelect = novaBalanca.querySelector('.marca_select');
+    const novoModeloSelect = novaBalanca.querySelector('.modelo_select');
+
+    novaMarcaSelect.addEventListener('change', function () {
+        const marcaSelecionada = this.value;
+        novoModeloSelect.innerHTML = '<option value="" disabled selected>Selecione um modelo</option>';
+        novoModeloSelect.disabled = true;
+
+        if (marcaSelecionada) {
+            fetch(`/obter_modelos_por_marca/?marca=${encodeURIComponent(marcaSelecionada)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        novoModeloSelect.disabled = false;
+                        data.forEach(modelo => {
+                            const option = document.createElement('option');
+                            option.value = modelo.id;
+                            option.text = modelo.modelo;
+                            novoModeloSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => console.error('Erro ao carregar modelos:', error));
+        }
+    });
+
+    novaBalanca.querySelector('.remove_balanca').addEventListener('click', function () {
+        novaBalanca.remove();
+    });
+});
+</script>
 {% endblock %}

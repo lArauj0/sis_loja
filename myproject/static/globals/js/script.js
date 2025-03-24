@@ -1,10 +1,3 @@
-const accordions = document.querySelectorAll('.accordion-collapse');
-accordions.forEach((accordion) => {
-    accordion.addEventListener('show.bs.collapse', () => {
-        accordion.style.transition = 'height 0.4s ease';
-    });
-});
-
 const form = document.querySelector('form');
 form.addEventListener('submit', () => {
     const submitButton = form.querySelector('[type="submit"]');

@@ -3,157 +3,58 @@
 {% block title %}Listas{% endblock %}
 
 {% block content %}
-        <!-- Formulário de Pesquisa -->
-        <form action="{% url 'listas_gerais' %}" method="get" class="mb-3">
-            <div class="form-group col-md-2">
-                <label class="form-label" for="nome">Pesquisa:</label>
-                <input class="form-control" type="text" name="nome" id="nome" placeholder="Digite um nome">
-            </div>
-            <input class="btn btn-success mt-2" type="submit" value="Pesquisar">
-        </form>
+    <form action="{% url 'listas_orcamentos' %}" method="get" class="d-flex justify-content-center">
+        <input class="form-control me-2" type="text" name="nome" id="nome" placeholder="Pesquisa" style="width: 250px;">
+        <button class="btn btn-primary" type="submit">Pesquisar</button>
+    </form>
 
-        <div class="accordion" id="accordionTables">
+    
 
-            <!-- Accordion para Orçamentos -->
-            <h2 class="text-center">Lista de Orçamentos</h2>
-            <div class="accordion" id="accordionOrcamentos">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOrcamentos">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOrcamentos" aria-expanded="true" aria-controls="collapseOrcamentos">
-                        Exibir/Esconder Orçamentos
-                        </button>
-                    </h2>
-                    <div id="collapseOrcamentos" class="accordion-collapse collapse" aria-labelledby="headingOrcamentos" data-bs-parent="#accordionTables">
-                        <div class="accordion-body">
-                            <table class="table table-striped table-responsive-sm">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Cliente</th>
-                                        <th>Balanca</th>
-                                        <th>Numero de série</th>
-                                        <th>Problema citado pelo cliente</th>
-                                        <th>Data de Chegada</th>
-                                        <th>Data de Entrega</th>
-                                        <th>Orçamento</th>
-                                        <th>Valor</th>
-                                        <th>Status</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for orcamento in lista_orcamentos %}
-                                    <tr>
-                                        <td>{{ orcamento.cliente }}</td>
-                                        <td>{{ orcamento.balanca }}</td>
-                                        <td>{{ orcamento.num_serie_balanca }}</td>
-                                        <td>{{ orcamento.problema_pelo_cliente }}</td>
-                                        <td>{{ orcamento.data_chegada }}</td>
-                                        <td>{{ orcamento.data_entrega }}</td>
-                                        <td>{{ orcamento.orcamento }}</td>
-                                        <td>{{ orcamento.valor }}</td>
-                                        <td>{{ orcamento.status }}</td>
-                                        <td>
-                                            <a href="/atualizar_orcamento/{{ orcamento.id }}" class="btn btn-primary">Atualizar</a>
-                                            <!-- Botão para abrir modal de confirmação -->
-                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="{{ orcamento.id }}" data-type="orcamento">
-                                                Deletar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="9">Nenhum orçamento encontrado</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-            <!-- Accordion para Clientes -->
-            <h2 class="text-center mt-4">Lista de Clientes</h2>
-            <div class="accordion" id="accordionClientes">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingClientes">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseClientes" aria-expanded="true" aria-controls="collapseClientes">
-                        Exibir/Esconder Clientes
-                        </button>
-                    </h2>
-                    <div id="collapseClientes" class="accordion-collapse collapse" aria-labelledby="headingClientes" data-bs-parent="#accordionTables">
-                        <div class="accordion-body">
-                            <table class="table table-striped table-responsive">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Nome</th>
-                                        <th>Contato</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for cliente in lista_clientes %}
-                                    <tr>
-                                        <td>{{ cliente.nome }}</td>
-                                        <td>{{ cliente.contato }}</td>
-                                        <td>
-                                            <a href="/atualizar_cliente/{{ cliente.id }}" class="btn btn-primary">Atualizar</a>
-                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="{{ cliente.id }}" data-type="cliente">
-                                                Deletar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="3">Nenhum cliente encontrado</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-            <!-- Accordion para Balanças -->
-            <h2 class="text-center mt-4">Lista de Balanças</h2>
-            <div class="accordion" id="accordionBalancas">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingBalancas">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBalancas" aria-expanded="true" aria-controls="collapseBalancas">
-                            Exibir/Esconder Balanças
-                        </button>
-                    </h2>
-                    <div id="collapseBalancas" class="accordion-collapse collapse" aria-labelledby="headingBalancas" data-bs-parent="#accordionTables">
-                        <div class="accordion-body">
-                            <table class="table table-striped table-responsive">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Marca</th>
-                                        <th>Modelo</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for balanca in lista_balancas %}
-                                    <tr>
-                                        <td>{{ balanca.marca }}</td>
-                                        <td>{{ balanca.modelo }}</td>
-                                        <td>
-                                            <a href="/atualizar_balanca/{{ balanca.id }}" class="btn btn-primary">Atualizar</a>
-                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="{{ balanca.id }}" data-type="balanca">
-                                                Deletar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="3">Nenhuma balança encontrada</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+        <!-- Accordion para Orçamentos -->
+        <h2 class="text-center">Lista de Orçamentos</h2>
+        <div class="d-flex justify-content-center">
+            <div class="table-container" style="max-width: 1200px; width: 100%;">
+                <table class="table table-striped table-bordered w-100 mx-auto">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Balança</th>
+                            <th>Número de Série</th>
+                            <th>Problema citado pelo Cliente</th>
+                            <th>Data de Chegada</th>
+                            <th>Data de Entrega</th>
+                            <th>Orçamento</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for orcamento in lista_orcamentos %}
+                            <tr>
+                                <td>{{ orcamento.cliente }}</td>
+                                <td>{{ orcamento.balanca }}</td>
+                                <td>{{ orcamento.num_serie_balanca }}</td>
+                                <td>{{ orcamento.problema_pelo_cliente }}</td>
+                                <td>{{ orcamento.data_chegada }}</td>
+                                <td>{{ orcamento.data_entrega }}</td>
+                                <td>{{ orcamento.orcamento }}</td>
+                                <td>{{ orcamento.valor }}</td>
+                                <td>{{ orcamento.status }}</td>
+                                <td>
+                                    <a href="/atualizar_orcamento/{{ orcamento.id }}" class="btn btn-primary">Atualizar</a>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="{{ orcamento.id }}" data-type="orcamento">
+                                        Deletar
+                                    </button>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="10">Nenhum orçamento encontrado</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -176,6 +77,14 @@
         </div>
     </div>
 
+    <footer class="footer fixed-bottom" style="position: fixed; right: 20px; bottom: 10px;">
+        <div>
+            <span class="rounded-pill" style="width:100px; height: auto; background-color: aliceblue; display: inline-block; text-align: center;">
+                <a href="/" class="nav-link m-3">Topo ⬆</a>
+            </span>
+        </div>
+    </footer>
+
     <script>
         // Script para abrir o modal de confirmação de delete
         var confirmDeleteModal = document.getElementById('confirmDeleteModal');
@@ -189,35 +98,15 @@
             if (type === 'orcamento') {
                 deleteUrl = '/deletar_orcamento/' + id;
             } else if (type === 'cliente') {
-                deleteUrl = '/deletar_clientes/' + id;
+                deleteUrl = '/deletar_cliente/' + id;
             } else if (type === 'balanca') {
-                deleteUrl = '/deletar_balancas/' + id;
+                deleteUrl = '/deletar_balanca/' + id;
             }
 
             // Altera o href do botão "Deletar" no modal para a URL correta
             var confirmDeleteBtn = confirmDeleteModal.querySelector('#confirmDeleteBtn');
             confirmDeleteBtn.setAttribute('href', deleteUrl);
         });
-
-        const accordions = document.querySelectorAll('.accordion-collapse');
-        accordions.forEach((accordion) => {
-            accordion.addEventListener('show.bs.collapse', () => {
-                accordion.style.transition = 'height 0.4s ease';
-            });
-        });
-
-        const form = document.querySelector('form');
-        form.addEventListener('submit', () => {
-            const submitButton = form.querySelector('[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Pesquisando...';
-        });
-
-        window.addEventListener('scroll', () => {
-            document.body.style.backgroundPositionY = `${window.scrollY * 0.5}px`;
-        });
-        
     </script>
 
-    
 {% endblock content %}
